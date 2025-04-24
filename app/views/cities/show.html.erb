@@ -1,0 +1,130 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><%= @city.name %></h1>
+    <%= link_to new_listing_path(city_id: @city.id), class: "btn btn-primary" do %>
+      <i class="fas fa-plus-circle me-2"></i>Déposer une annonce
+    <% end %>
+  </div>
+  
+  <% if @categories.present? %>
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white">
+        <h4 class="mb-0">Catégories populaires à <%= @city.name %></h4>
+      </div>
+      <div class="card-body">
+        <div class="row row-cols-2 row-cols-md-5 g-3">
+          <% @categories.each do |category| %>
+            <div class="col">
+              <%= link_to listings_path(city_id: @city.id, category_id: category.id), class: "text-decoration-none" do %>
+                <div class="card h-100 text-center">
+                  <div class="card-body">
+                    <% if category.icon.present? %>
+                      <i class="<%= category.icon %> fa-2x mb-2 text-primary"></i>
+                    <% else %>
+                      <i class="fas fa-folder fa-2x mb-2 text-primary"></i>
+                    <% end %>
+                    <h5 class="card-title"><%= category.name %></h5>
+                    <p class="card-text text-muted small">
+                      <%= category.listings_count %> annonces
+                    </p>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+  
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card shadow-sm sticky-top" style="top: 20px;">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Filtres</h5>
+        </div>
+        <div class="card-body">
+          <%= form_with url: city_path(@city), method: :get, data: { turbo: false } do |f| %>
+            <div class="mb-3">
+              <%= f.label :category_id, "Catégorie", class: "form-label" %>
+              <%= f.collection_select :category_id, Category.all, :id, :name, { include_blank: "Toutes les catégories" }, class: "form-select" %>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Prix</label>
+              <div class="row">
+                <div class="col">
+                  <%= f.number_field :min_price, placeholder: "Min", class: "form-control" %>
+                </div>
+                <div class="col">
+                  <%= f.number_field :max_price, placeholder: "Max", class: "form-control" %>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-grid">
+              <%= f.submit "Appliquer les filtres", class: "btn btn-primary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-9">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Annonces à <%= @city.name %> (<%= @listings.total_count %>)</h2>
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
+            Trier par
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <%= link_to "Plus récentes", city_path(@city, sort: "newest"), class: "dropdown-item" %>
+            <%= link_to "Prix croissant", city_path(@city, sort: "price_asc"), class: "dropdown-item" %>
+            <%= link_to "Prix décroissant", city_path(@city, sort: "price_desc"), class: "dropdown-item" %>
+          </ul>
+        </div>
+      </div>
+      
+      <% if @listings.any? %>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+          <% @listings.each do |listing| %>
+            <div class="col">
+              <div class="card h-100 shadow-sm">
+                <%= link_to listing_path(listing) do %>
+                  <% if listing.images.attached? %>
+                    <%= image_tag url_for(listing.images.first), class: "card-img-top" %>
+                  <% else %>
+                    <div class="bg-light text-center py-5">
+                      <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                  <% end %>
+                <% end %>
+                <div class="card-body">
+                  <h5 class="card-title text-truncate">
+                    <%= link_to listing.title, listing_path(listing), class: "text-decoration-none text-dark" %>
+                  </h5>
+                  <p class="card-text text-primary fw-bold"><%= number_to_currency(listing.price, unit: "DH", precision: 0) %></p>
+                  <p class="card-text text-muted small">
+                    <i class="fas fa-folder"></i> <%= listing.category.name %>
+                  </p>
+                </div>
+                <div class="card-footer bg-white">
+                  <small class="text-muted">
+                    <i class="far fa-clock"></i> <%= time_ago_in_words(listing.created_at) %>
+                  </small>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        
+        <div class="d-flex justify-content-center mt-4">
+          <%= paginate @listings %>
+        </div>
+      <% else %>
+        <div class="alert alert-info">
+          <p class="mb-0">Aucune annonce trouvée à <%= @city.name %>.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

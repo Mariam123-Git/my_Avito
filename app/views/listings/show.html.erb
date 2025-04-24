@@ -1,0 +1,180 @@
+<div class="row">
+  <div class="col-md-8">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><%= link_to "Accueil", root_path %></li>
+        <li class="breadcrumb-item"><%= link_to @listing.category.name, category_path(@listing.category) %></li>
+        <li class="breadcrumb-item active" aria-current="page"><%= @listing.title %></li>
+      </ol>
+    </nav>
+    
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h1 class="mb-3"><%= @listing.title %></h1>
+        <p class="text-primary fs-3 fw-bold"><%= number_to_currency(@listing.price, unit: "DH", precision: 0) %></p>
+        
+        <div class="d-flex justify-content-between text-muted mb-4">
+          <span><i class="fas fa-map-marker-alt"></i> <%= @listing.city.name %></span>
+          <span><i class="far fa-clock"></i> Publiée <%= time_ago_in_words(@listing.created_at) %></span>
+        </div>
+        
+        <% if @listing.images.attached? %>
+          <div id="listingCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+            <div class="carousel-inner">
+              <% @listing.images.each_with_index do |image, index| %>
+                <div class="carousel-item <%= 'active' if index.zero? %>">
+                  <%= image_tag url_for(@listing.images.first), class: "d-block w-100 rounded" %>
+                </div>
+              <% end %>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#listingCarousel" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#listingCarousel" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
+          </div>
+          
+          <div class="row mb-4">
+            <% @listing.images.each_with_index do |image, index| %>
+              <div class="col-3 mb-2">
+                <%= image_tag url_for(@listing.images.first), 
+                              class: "img-thumbnail w-100 cursor-pointer", 
+                              data: { bs_target: "#listingCarousel", bs_slide_to: index } %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+        
+        <h4 class="mb-3">Description</h4>
+        <div class="mb-4">
+          <%= simple_format @listing.description %>
+        </div>
+        
+        <% if current_user == @listing.user %>
+          <div class="d-flex gap-2 mt-4">
+            <%= link_to "Modifier", edit_listing_path(@listing), class: "btn btn-outline-primary" %>
+            <%= button_to "Supprimer", listing_path(@listing), method: :delete, 
+                          data: { confirm: "Êtes-vous sûr de vouloir supprimer cette annonce?" }, 
+                          class: "btn btn-outline-danger" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h4 class="mb-0">Annonces similaires</h4>
+      </div>
+      <div class="card-body">
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+          <% @related_listings.each do |listing| %>
+            <div class="col">
+              <div class="card h-100 shadow-sm">
+                <%= link_to listing_path(listing) do %>
+                  <% if listing.images.attached? %>
+                    <%= image_tag url_for(@listing.images.first), class: "card-img-top" %>
+                  <% end %>
+                <% end %>
+                <div class="card-body">
+                  <h5 class="card-title text-truncate">
+                    <%= link_to listing.title, listing_path(listing), class: "text-decoration-none text-dark" %>
+                  </h5>
+                  <p class="card-text text-primary fw-bold"><%= number_to_currency(listing.price, unit: "DH", precision: 0) %></p>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card shadow-sm mb-4 sticky-top" style="top: 20px;">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <% if @listing.user.avatar.attached? %>
+            <%= image_tag url_for(@listing.images.first), class: "rounded-circle me-3" %>
+          <% else %>
+            <div class="bg-light rounded-circle p-3 me-3">
+              <i class="fas fa-user fa-2x text-muted"></i>
+            </div>
+          <% end %>
+          <div>
+            <h5 class="mb-0"><%= @listing.user.username %></h5>
+            <p class="text-muted mb-0">Membre depuis <%= l @listing.user.created_at.to_date, format: :long %></p>
+          </div>
+        </div>
+        
+        <div class="d-grid gap-2">
+          <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#contactModal">
+            <i class="fas fa-phone-alt me-2"></i>Voir le numéro
+          </button>
+          <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#messageModal">
+            <i class="fas fa-envelope me-2"></i>Envoyer un message
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5 class="mb-0">Conseils de sécurité</h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-unstyled">
+          <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Rencontrez le vendeur en personne</li>
+          <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Vérifiez le produit avant d'acheter</li>
+          <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Payez uniquement après avoir reçu l'article</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contact Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Contacter le vendeur</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <h3 class="mb-4"><i class="fas fa-phone-alt me-2 text-primary"></i><%= @listing.user.phone_number %></h3>
+        <p class="text-muted">Mentionnez que vous avez vu l'annonce sur Avito Clone</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Message Modal -->
+<div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Envoyer un message</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <%= form_with url: messages_path, local: true do |f| %>
+          <%= f.hidden_field :recipient_id, value: @listing.user.id %>
+          <%= f.hidden_field :listing_id, value: @listing.id %>
+          
+          <div class="mb-3">
+            <%= f.label :content, "Votre message", class: "form-label" %>
+            <%= f.text_area :content, rows: 5, class: "form-control", 
+                           placeholder: "Bonjour, je suis intéressé par votre annonce..." %>
+          </div>
+          
+          <div class="d-grid">
+            <%= f.submit "Envoyer", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

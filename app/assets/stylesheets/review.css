@@ -1,0 +1,27 @@
+
+/* Styles pour les étoiles */
+.rating .fas.fa-star,
+.rating .far.fa-star,
+.rating .fas.fa-star-half-alt {
+  font-size: 1rem;
+}
+
+/* Styles pour les boutons de notation */
+.rating-input .btn-outline-warning {
+  color: #6c757d;
+  border-color: #dee2e6;
+}
+
+.rating-input .btn-outline-warning:hover,
+.rating-input .btn-outline-warning.active {
+  color: #212529;
+  background-color: #ffc107;
+  border-color: #ffc107;
+}
+
+/* Styles pour les avis */
+.review-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}

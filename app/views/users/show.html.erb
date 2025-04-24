@@ -1,0 +1,167 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <% if @user.avatar.attached? %>
+            <%= image_tag @user.avatar.variant(resize_to_fill: [150, 150]), class: "rounded-circle mb-3" %>
+          <% else %>
+            <div class="bg-light rounded-circle p-4 d-inline-block mb-3">
+              <i class="fas fa-user fa-4x text-muted"></i>
+            </div>
+          <% end %>
+          <h3 class="mb-1"><%= @user.username %></h3>
+          <p class="text-muted mb-3">Membre depuis <%= l @user.created_at.to_date, format: :long %></p>
+          
+          <div class="d-flex justify-content-center mb-3">
+            <div class="me-4 text-center">
+              <div class="fw-bold"><%= @user.listings.active.count %></div>
+              <div class="text-muted small">Annonces</div>
+            </div>
+            <div class="text-center">
+                <div class="fw-bold"><%= @user.reviews.count %></div>
+                <div class="text-muted small">Avis</div>
+
+            </div>
+          </div>
+          
+          <% if @user.bio.present? %>
+            <p class="mb-3"><%= @user.bio %></p>
+          <% end %>
+          
+          <% if user_signed_in? && current_user != @user %>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#contactModal">
+                <i class="fas fa-envelope me-2"></i>Contacter
+              </button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      
+      <% if @user.respond_to?(:reviews) && @user.reviews.present? %>
+        <div class="card shadow-sm mt-4">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">Avis (<%= @user.reviews.count %>)</h5>
+          </div>
+          <div class="card-body p-0">
+            <ul class="list-group list-group-flush">
+              <% @user.reviews.order(created_at: :desc).limit(3).each do |review| %>
+                <li class="list-group-item">
+                  <div class="d-flex">
+                    <% if review.reviewer.avatar.attached? %>
+                      <%= image_tag review.reviewer.avatar.variant(resize_to_fill: [40, 40]), class: "rounded-circle me-3" %>
+                    <% else %>
+                      <div class="bg-light rounded-circle p-2 me-3">
+                        <i class="fas fa-user text-muted"></i>
+                      </div>
+                    <% end %>
+                    <div>
+                      <div class="mb-1">
+                        <% review.rating.times do %>
+                          <i class="fas fa-star text-warning"></i>
+                        <% end %>
+                        <% (5 - review.rating).times do %>
+                          <i class="far fa-star text-warning"></i>
+                        <% end %>
+                      </div>
+                      <p class="mb-1"><%= review.comment %></p>
+                      <small class="text-muted">
+                        <%= link_to review.reviewer.username, user_path(review.reviewer), class: "text-decoration-none" %> -
+                        <%= time_ago_in_words(review.created_at) %>
+                      </small>
+                    </div>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+          <div class="card-footer bg-white text-center">
+            <a href="#" class="text-decoration-none">Voir tous les avis</a>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    
+    <div class="col-md-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Annonces de <%= @user.username %></h4>
+        </div>
+        <div class="card-body">
+          <% if @listings.any? %>
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+              <% @listings.each do |listing| %>
+                <div class="col">
+                  <div class="card h-100 shadow-sm">
+                    <%= link_to listing_path(listing) do %>
+                      <% if listing.images.attached? %>
+                        <%= image_tag url_for(listing.images.first), class: "card-img-top" %>
+                      <% else %>
+                        <div class="bg-light text-center py-5">
+                          <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                      <% end %>
+                    <% end %>
+                    <div class="card-body">
+                      <h5 class="card-title text-truncate">
+                        <%= link_to listing.title, listing_path(listing), class: "text-decoration-none text-dark" %>
+                      </h5>
+                      <p class="card-text text-primary fw-bold"><%= number_to_currency(listing.price, unit: "DH", precision: 0) %></p>
+                      <p class="card-text text-muted small">
+                        <i class="fas fa-map-marker-alt"></i> <%= listing.city.name %> |
+                        <i class="fas fa-folder"></i> <%= listing.category.name %>
+                      </p>
+                    </div>
+                    <div class="card-footer bg-white">
+                      <small class="text-muted">
+                        <i class="far fa-clock"></i> <%= time_ago_in_words(listing.created_at) %>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            
+            <div class="d-flex justify-content-center mt-4">
+              <%= paginate @listings %>
+            </div>
+          <% else %>
+            <div class="text-center py-5">
+              <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+              <h5>Aucune annonce active</h5>
+              <p class="text-muted">Cet utilisateur n'a pas d'annonces actives pour le moment.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contact Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Contacter <%= @user.username %></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <%= form_with url: messages_path, local: true do |f| %>
+          <%= f.hidden_field :recipient_id, value: @user.id %>
+          
+          <div class="mb-3">
+            <%= f.label :content, "Votre message", class: "form-label" %>
+            <%= f.text_area :content, rows: 5, class: "form-control", 
+                           placeholder: "Bonjour, je vous contacte à propos de..." %>
+          </div>
+          
+          <div class="d-grid">
+            <%= f.submit "Envoyer", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

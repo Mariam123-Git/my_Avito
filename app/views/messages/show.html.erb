@@ -1,0 +1,156 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <div class="d-flex align-items-center">
+            <% if @other_user.avatar.attached? %>
+              <%= image_tag @other_user.avatar.variant(resize_to_fill: [40, 40]), class: "rounded-circle me-3" %>
+            <% else %>
+              <div class="bg-light rounded-circle p-2 me-3">
+                <i class="fas fa-user text-muted"></i>
+              </div>
+            <% end %>
+            <h4 class="mb-0"><%= @other_user.username %></h4>
+            <%= link_to user_path(@other_user), class: "btn btn-sm btn-outline-secondary ms-auto" do %>
+              <i class="fas fa-user me-1"></i>Voir le profil
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="chat-messages p-4" style="height: 400px; overflow-y: auto;">
+            <% if @messages.any? %>
+              <% @messages.each do |message| %>
+                <div class="mb-3 <%= message.sender == current_user ? 'text-end' : '' %>">
+                  <div class="d-inline-block p-3 rounded <%= message.sender == current_user ? 'bg-primary text-white' : 'bg-light' %>" style="max-width: 75%;">
+                    <%= simple_format message.content %>
+                    
+                    <% if message.listing.present? %>
+                      <div class="mt-2 p-2 border rounded <%= message.sender == current_user ? 'border-light bg-primary-dark' : 'border-secondary bg-white' %>">
+                        <div class="d-flex align-items-center">
+                          <% if message.listing.images.attached? %>
+                            <%= image_tag message.listing.images.first.variant(resize_to_fill: [50, 50]), class: "me-2 rounded" %>
+                          <% end %>
+                          <div>
+                            <div class="fw-bold"><%= message.listing.title %></div>
+                            <div class="<%= message.sender == current_user ? 'text-light' : 'text-primary' %> fw-bold">
+                              <%= number_to_currency(message.listing.price, unit: "DH", precision: 0) %>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                  <div class="mt-1">
+                    <small class="text-muted"><%= l message.created_at, format: :short %></small>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="text-center py-5">
+                <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                <h5>Commencez la conversation</h5>
+                <p class="text-muted">Envoyez un message à <%= @other_user.username %>.</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="card-footer bg-white">
+          <%= form_with model: @message, url: messages_path, local: true do |f| %>
+            <%= f.hidden_field :recipient_id, value: @other_user.id %>
+            
+            <div class="input-group">
+              <%= f.text_area :content, class: "form-control", placeholder: "Écrivez votre message...", rows: 2 %>
+              <button class="btn btn-primary" type="submit">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <% if @listings.any? %>
+        <div class="card shadow-sm">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">Annonces de <%= @other_user.username %></h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+              <% @listings.limit(5).each do |listing| %>
+                <div class="list-group-item">
+                  <div class="d-flex">
+                    <% if listing.images.attached? %>
+                      <%= image_tag listing.images.first.variant(resize_to_fill: [80, 60]), class: "me-3 rounded" %>
+                    <% end %>
+                    <div>
+                      <h6 class="mb-1"><%= link_to listing.title, listing_path(listing), class: "text-decoration-none" %></h6>
+                      <p class="text-primary fw-bold mb-1"><%= number_to_currency(listing.price, unit: "DH", precision: 0) %></p>
+                      <button class="btn btn-sm btn-outline-primary" type="button" data-listing-id="<%= listing.id %>" data-listing-title="<%= listing.title %>">
+                        Mentionner cette annonce
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <% if @listings.count > 5 %>
+            <div class="card-footer bg-white text-center">
+              <%= link_to "Voir toutes les annonces", user_path(@other_user), class: "text-decoration-none" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div id="listing-template" class="d-none">
+  <%= form_with model: @message, url: messages_path, local: true do |f| %>
+    <%= f.hidden_field :recipient_id, value: @other_user.id %>
+    <%= f.hidden_field :listing_id, id: "listing_id_template" %>
+    
+    <div class="input-group">
+      <%= f.text_area :content, id: "content_template", class: "form-control", rows: 2 %>
+      <button class="btn btn-primary" type="submit">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Scroll to bottom of chat
+    const chatMessages = document.querySelector('.chat-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Mention listing functionality
+    const mentionButtons = document.querySelectorAll('[data-listing-id]');
+    const messageForm = document.querySelector('form');
+    const listingTemplate = document.getElementById('listing-template');
+    
+    mentionButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const listingId = this.getAttribute('data-listing-id');
+        const listingTitle = this.getAttribute('data-listing-title');
+        
+        // Clone the template form
+        const newForm = listingTemplate.querySelector('form').cloneNode(true);
+        
+        // Set the listing ID
+        newForm.querySelector('#listing_id_template').value = listingId;
+        
+        // Set a default message
+        newForm.querySelector('#content_template').value = `Je suis intéressé par votre annonce "${listingTitle}". Est-elle toujours disponible?`;
+        
+        // Replace the current form
+        messageForm.parentNode.replaceChild(newForm, messageForm);
+      });
+    });
+  });
+</script>

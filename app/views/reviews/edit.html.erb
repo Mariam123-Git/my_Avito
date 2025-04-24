@@ -1,0 +1,135 @@
+<div class="container my-5">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-header bg-white py-3">
+          <h4 class="card-title mb-0">Modifier votre avis sur <%= @user.username %></h4>
+        </div>
+        <div class="card-body p-4">
+          <div class="mb-4">
+            <div class="d-flex align-items-center">
+              <div class="me-3">
+                <% if @user.avatar.attached? %>
+                  <%= image_tag @user.avatar.variant(resize_to_fill: [60, 60]), class: "rounded-circle" %>
+                <% else %>
+                  <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="fas fa-user fa-lg text-muted"></i>
+                  </div>
+                <% end %>
+              </div>
+              <div>
+                <h5 class="mb-1"><%= @user.username %></h5>
+                <p class="text-muted mb-0">Avis publié le <%= l(@review.created_at, format: :long) %></p>
+              </div>
+            </div>
+          </div>
+
+          <%= form_with(model: [@user, @review], local: true) do |f| %>
+            <% if @review.errors.any? %>
+              <div class="alert alert-danger">
+                <h5 class="alert-heading">
+                  <%= pluralize(@review.errors.count, "erreur") %> ont empêché cet avis d'être enregistré:
+                </h5>
+                <ul class="mb-0">
+                  <% @review.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+
+            <div class="mb-4">
+              <%= f.label :rating, "Note", class: "form-label" %>
+              <div class="rating-input mb-2">
+                <div class="btn-group" role="group" aria-label="Rating">
+                  <% (1..5).each do |i| %>
+                    <input type="radio" class="btn-check" name="review[rating]" id="rating<%= i %>" value="<%= i %>" <%= 'checked' if @review.rating == i %> required>
+                    <label class="btn btn-outline-warning" for="rating<%= i %>">
+                      <i class="fas fa-star"></i> <%= i %>
+                    </label>
+                  <% end %>
+                </div>
+              </div>
+              <div class="form-text">Sélectionnez une note de 1 à 5 étoiles.</div>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :comment, "Commentaire", class: "form-label" %>
+              <%= f.text_area :comment, rows: 5, class: "form-control", placeholder: "Partagez votre expérience avec cet utilisateur...", required: true %>
+              <div class="form-text">Minimum 10 caractères, maximum 500 caractères.</div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <%= f.submit "Mettre à jour l'avis", class: "btn btn-primary" %>
+              <%= link_to "Annuler", user_path(@user), class: "btn btn-outline-secondary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const ratingLabels = document.querySelectorAll('.rating-input label');
+    
+    ratingLabels.forEach(label => {
+      label.addEventListener('mouseover', function() {
+        const value = this.getAttribute('for').replace('rating', '');
+        
+        // Reset all labels
+        ratingLabels.forEach(l => {
+          l.classList.remove('active');
+        });
+        
+        // Highlight current and previous labels
+        for (let i = 0; i < value; i++) {
+          ratingLabels[i].classList.add('active');
+        }
+      });
+    });
+    
+    document.querySelector('.rating-input').addEventListener('mouseout', function() {
+      // Find the checked radio button
+      const checkedRadio = document.querySelector('.rating-input input:checked');
+      
+      if (checkedRadio) {
+        const value = checkedRadio.value;
+        
+        // Reset all labels
+        ratingLabels.forEach(l => {
+          l.classList.remove('active');
+        });
+        
+        // Highlight labels up to the checked value
+        for (let i = 0; i < value; i++) {
+          ratingLabels[i].classList.add('active');
+        }
+      } else {
+        // If none is checked, remove all highlights
+        ratingLabels.forEach(l => {
+          l.classList.remove('active');
+        });
+      }
+    });
+    
+    // Initialize the rating display based on the current value
+    const checkedRadio = document.querySelector('.rating-input input:checked');
+    if (checkedRadio) {
+      const value = checkedRadio.value;
+      for (let i = 0; i < value; i++) {
+        ratingLabels[i].classList.add('active');
+      }
+    }
+  });
+</script>
+
+<style>
+  .rating-input label.active,
+  .rating-input label:hover {
+    background-color: #ffc107;
+    color: #212529;
+    border-color: #ffc107;
+  }
+</style>

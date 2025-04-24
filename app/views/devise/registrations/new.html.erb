@@ -1,0 +1,77 @@
+<% content_for :page_title, "Inscription" %>
+
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white py-3">
+        <h4 class="card-title mb-0 text-center">Créer un compte</h4>
+      </div>
+      <div class="card-body p-4">
+        <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "needs-validation" }) do |f| %>
+          <%= render "devise/shared/error_messages", resource: resource %>
+
+          <div class="mb-3">
+            <%= f.label :username, "Nom d'utilisateur", class: "form-label" %>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
+              <%= f.text_field :username, autofocus: true, class: "form-control", placeholder: "Choisissez un nom d'utilisateur" %>
+            </div>
+            <div class="form-text">Votre nom d'utilisateur sera visible par les autres membres.</div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :email, class: "form-label" %>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+              <%= f.email_field :email, autocomplete: "email", class: "form-control", placeholder: "votre@email.com" %>
+            </div>
+            <div class="form-text">Nous ne partagerons jamais votre email avec des tiers.</div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :phone, "Téléphone (optionnel)", class: "form-label" %>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-phone"></i></span>
+              <%= f.telephone_field :phone_number, class: "form-control", placeholder: "06XXXXXXXX" %>
+            </div>
+            <div class="form-text">Votre numéro sera visible uniquement par les utilisateurs avec qui vous interagissez.</div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :password, "Mot de passe", class: "form-label" %>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+              <%= f.password_field :password, autocomplete: "new-password", class: "form-control", placeholder: "••••••••" %>
+            </div>
+            <div class="form-text">Minimum <%= @minimum_password_length %> caractères.</div>
+          </div>
+
+          <div class="mb-4">
+            <%= f.label :password_confirmation, "Confirmer le mot de passe", class: "form-label" %>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+              <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control", placeholder: "••••••••" %>
+            </div>
+          </div>
+
+          <div class="mb-4 form-check">
+            <input type="checkbox" class="form-check-input" id="terms" required>
+            <label class="form-check-label" for="terms">
+              J'accepte les <a href="#" class="text-decoration-none">Conditions d'utilisation</a> et la <a href="#" class="text-decoration-none">Politique de confidentialité</a>
+            </label>
+          </div>
+
+          <div class="d-grid gap-2">
+            <%= f.submit "Sign up", class: "btn btn-primary btn-lg" %>
+          </div>
+        <% end %>
+      </div>
+      <div class="card-footer bg-white py-3 text-center">
+        <p class="mb-0">
+          Vous avez déjà un compte? 
+          <%= link_to "Sign in", new_session_path(resource_name), class: "text-decoration-none fw-bold" %>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

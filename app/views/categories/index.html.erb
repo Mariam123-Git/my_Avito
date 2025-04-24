@@ -1,0 +1,35 @@
+<div class="container">
+<h1 class="mb-4">Toutes les catégories</h1>
+
+<div class="row">
+<% @categories.each do |category| %>
+    <div class="col-md-4 mb-4">
+    <div class="card shadow-sm h-100">
+        <div class="card-header bg-white">
+        <h4 class="mb-0">
+            <% if category.icon.present? %>
+            <i class="<%= category.icon %> me-2 text-primary"></i>
+            <% else %>
+            <i class="fas fa-folder me-2 text-primary"></i>
+            <% end %>
+            <%= link_to category.name, category_path(category), class: "text-decoration-none text-dark" %>
+        </h4>
+        </div>
+        <div class="card-body">
+        <ul class="list-unstyled">
+            <% category.subcategories.each do |subcategory| %>
+            <li class="mb-2">
+                <%= link_to subcategory.name, category_path(subcategory), class: "text-decoration-none text-muted" %>
+                <span class="badge bg-light text-dark"><%= Listing.where(category: subcategory).active.count %></span>
+            </li>
+            <% end %>
+        </ul>
+        </div>
+        <div class="card-footer bg-white">
+        <%= link_to "Voir toutes les annonces", category_path(category), class: "btn btn-sm btn-outline-primary" %>
+        </div>
+    </div>
+    </div>
+<% end %>
+</div>
+</div>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= yield(:page_title).presence || "Avito Clone" %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-light">
+  <header class="py-3 mb-4 border-bottom bg-white shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a href="/" class="d-flex align-items-center text-decoration-none">
+        <span class="fs-4 fw-bold text-primary">Avito </span>
+      </a>
+      <div>
+        <% if controller_name != 'sessions' %>
+          <%= link_to "Se connecter", new_session_path(resource_name), class: "btn btn-outline-primary me-2" %>
+        <% end %>
+        <% if controller_name != 'registrations' %>
+          <%= link_to "S'inscrire", new_registration_path(resource_name), class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+  </header>
+
+  <main class="container my-5">
+    <% if notice %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= notice %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% end %>
+    <% if alert %>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= alert %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% end %>
+
+    <%= yield %>
+  </main>
+
+  <footer class="py-4 mt-5 bg-white border-top">
+    <div class="container text-center">
+      <p class="text-muted mb-0">&copy; <%= Date.current.year %> Avito Clone. Tous droits réservés.</p>
+    </div>
+  </footer>
+</body>
+</html>
