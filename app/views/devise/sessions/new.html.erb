@@ -1,6 +1,6 @@
 <% content_for :page_title, "Connexion" %>
 
-<div class="container-fluid  py-5">
+<div class="container-fluid py-5">
   <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
       <div class="card shadow rounded-4 border-0">
@@ -10,6 +10,16 @@
         </div>
 
         <div class="card-body p-4">
+          <% if resource.errors.any? %>
+            <div class="alert alert-danger">
+              <ul>
+                <% resource.errors.full_messages.each do |msg| %>
+                  <li><%= msg %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
           <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "needs-validation" }) do |f| %>
 
             <!-- Email -->
